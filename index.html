@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>記録ノート</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&family=Zen+Kaku+Gothic+New:wght@300;400;700&display=swap');
+
+:root {
+–bg: #f7f4ef;
+–card: #ffffff;
+–border: #e4ddd3;
+–accent: #6b8f71;
+–accent-soft: #e8f0e9;
+–warm: #c47a5a;
+–warm-soft: #f5ece7;
+–text: #2e2a25;
+–muted: #9a9088;
+–chip-bg: #f0ece6;
+}
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+font-family: ‘Zen Kaku Gothic New’, sans-serif;
+background: var(–bg);
+color: var(–text);
+min-height: 100vh;
+padding-bottom: 80px;
+}
+
+header {
+background: var(–card);
+border-bottom: 1px solid var(–border);
+padding: 14px 18px;
+position: sticky; top: 0; z-index: 100;
+display: flex; align-items: center; justify-content: space-between;
+}
+.header-title {
+font-family: ‘Noto Serif JP’, serif;
+font-size: 17px; font-weight: 600;
+color: var(–text); letter-spacing: 0.04em;
+}
+.today-pill {
+font-size: 11px; color: var(–muted);
+background: var(–chip-bg);
+padding: 4px 10px; border-radius: 20px;
+}
+
+.tabs {
+display: flex;
+background: var(–card);
+border-bottom: 1px solid var(–border);
+}
+.tab {
+flex: 1; padding: 11px 0;
+text-align: center; font-size: 12px;
+color: var(–muted); cursor: pointer;
+border-bottom: 2px solid transparent;
+transition: all 0.2s; font-weight: 400;
+letter-spacing: 0.03em;
+}
+.tab.active { color: var(–accent); border-bottom-color: var(–accent); font-weight: 700; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+.form-wrap { padding: 18px; }
+
+.step {
+background: var(–card);
+border-radius: 16px;
+border: 1px solid var(–border);
+margin-bottom: 12px;
+overflow: hidden;
+}
+.step-header {
+display: flex; align-items: center; gap: 10px;
+padding: 14px 16px;
+}
+.step-num {
+width: 22px; height: 22px;
+border-radius: 50%;
+background: var(–chip-bg);
+color: var(–muted);
+font-size: 11px; font-weight: 700;
+display: flex; align-items: center; justify-content: center;
+flex-shrink: 0; transition: all 0.2s;
+}
+.step.filled .step-num { background: var(–accent); color: white; }
+.step-label { font-size: 13px; font-weight: 700; color: var(–text); flex: 1; }
+.step-preview { font-size: 11px; color: var(–accent); max-width: 120px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.step-body { padding: 0 16px 16px; }
+
+.chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.chip {
+padding: 8px 14px;
+border: 1.5px solid var(–border);
+border-radius: 20px;
+background: var(–card);
+font-size: 13px; cursor: pointer;
+color: var(–muted);
+transition: all 0.15s;
+font-family: ‘Zen Kaku Gothic New’, sans-serif;
+font-weight: 400;
+}
+.chip.sel-green { border-color: var(–accent); background: var(–accent-soft); color: var(–accent); font-weight: 700; }
+.chip.sel-warm  { border-color: var(–warm);   background: var(–warm-soft);   color: var(–warm);   font-weight: 700; }
+
+.tantrum-toggle { display: flex; gap: 10px; margin-top: 4px; }
+.toggle-btn {
+flex: 1; padding: 12px 8px;
+border: 1.5px solid var(–border);
+border-radius: 12px; background: var(–card);
+font-size: 14px; cursor: pointer; text-align: center;
+font-family: ‘Zen Kaku Gothic New’, sans-serif;
+color: var(–muted); transition: all 0.15s;
+}
+.toggle-btn.sel-no  { border-color: var(–accent); background: var(–accent-soft); color: var(–accent); font-weight: 700; }
+.toggle-btn.sel-yes { border-color: var(–warm);   background: var(–warm-soft);   color: var(–warm);   font-weight: 700; }
+
+.trigger-section {
+margin-top: 12px; padding: 14px;
+background: var(–warm-soft);
+border-radius: 12px; border: 1px solid #e8c4b0;
+display: none;
+}
+.trigger-section.show { display: block; }
+.trigger-label { font-size: 11px; color: var(–warm); font-weight: 700; letter-spacing: 0.08em; margin-bottom: 8px; }
+
+.intensity-row { display: flex; gap: 8px; margin-top: 4px; }
+.int-btn {
+flex: 1; padding: 10px 4px;
+border: 1.5px solid var(–border);
+border-radius: 10px; background: var(–card);
+font-size: 11px; cursor: pointer; text-align: center;
+font-family: ‘Zen Kaku Gothic New’, sans-serif;
+color: var(–muted); transition: all 0.15s;
+}
+.int-btn .icon { font-size: 18px; display: block; margin-bottom: 3px; }
+.int-btn.lv1 { border-color: #82b98a; background: #f0f7f1; color: #4a8a52; font-weight: 700; }
+.int-btn.lv2 { border-color: #c4a85a; background: #faf5e8; color: #8a6820; font-weight: 700; }
+.int-btn.lv3 { border-color: var(–warm); background: var(–warm-soft); color: var(–warm); font-weight: 700; }
+
+textarea {
+width: 100%; min-height: 80px;
+border: 1.5px solid var(–border); border-radius: 12px;
+padding: 12px 14px;
+font-family: ‘Zen Kaku Gothic New’, sans-serif;
+font-size: 14px; color: var(–text);
+background: var(–card); resize: none; outline: none;
+transition: border-color 0.15s; line-height: 1.6; margin-top: 4px;
+}
+textarea:focus { border-color: var(–accent); }
+textarea::placeholder { color: #c0b8b0; font-size: 13px; }
+
+.save-btn {
+width: 100%; padding: 15px;
+background: var(–accent); color: white;
+border: none; border-radius: 14px;
+font-family: ‘Zen Kaku Gothic New’, sans-serif;
+font-size: 15px; font-weight: 700; cursor: pointer;
+letter-spacing: 0.05em; margin-top: 4px;
+box-shadow: 0 4px 16px rgba(107,143,113,0.28);
+transition: all 0.15s;
+}
+.save-btn:active { transform: scale(0.98); box-shadow: none; }
+
+.toast {
+position: fixed; bottom: 88px; left: 50%;
+transform: translateX(-50%) translateY(10px);
+background: #2e2a25; color: white;
+padding: 10px 20px; border-radius: 20px;
+font-size: 13px; opacity: 0;
+transition: all 0.25s; pointer-events: none;
+white-space: nowrap; z-index: 300;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.log-wrap { padding: 16px; }
+.log-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.log-top-label { font-size: 12px; color: var(–muted); font-weight: 700; letter-spacing: 0.08em; }
+.count-pill { font-size: 11px; background: var(–chip-bg); color: var(–muted); padding: 3px 10px; border-radius: 20px; }
+
+.empty { text-align: center; padding: 60px 20px; color: var(–muted); }
+.empty .e-icon { font-size: 44px; margin-bottom: 12px; }
+.empty p { font-size: 13px; line-height: 1.8; }
+
+.log-card {
+background: var(–card); border-radius: 14px;
+border: 1px solid var(–border); padding: 14px;
+margin-bottom: 10px; position: relative;
+}
+.log-card.has-tantrum { border-left: 4px solid var(–warm); }
+.log-card:not(.has-tantrum) { border-left: 4px solid var(–accent); }
+.log-card-top { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; align-items: center; }
+.tag { font-size: 11px; padding: 3px 9px; border-radius: 10px; font-weight: 700; }
+.tag-cat { background: var(–chip-bg); color: var(–text); }
+.tag-tantrum-no  { background: var(–accent-soft); color: var(–accent); }
+.tag-tantrum-yes { background: var(–warm-soft);   color: var(–warm); }
+.tag-int { font-size: 10px; }
+.tag-int1 { background: #edf6ee; color: #4a8a52; }
+.tag-int2 { background: #faf5e8; color: #8a6820; }
+.tag-int3 { background: var(–warm-soft); color: var(–warm); }
+.log-date { font-size: 11px; color: var(–muted); margin-left: auto; }
+.log-triggers { font-size: 12px; color: var(–warm); margin-bottom: 6px; }
+.log-memo { font-size: 13px; line-height: 1.6; color: var(–text); }
+.log-time { font-size: 11px; color: var(–muted); margin-top: 6px; }
+.del-btn {
+position: absolute; top: 10px; right: 10px;
+background: none; border: none; color: var(–border);
+font-size: 15px; cursor: pointer; padding: 2px 6px;
+border-radius: 6px; transition: color 0.15s;
+}
+.del-btn:hover { color: var(–warm); }
+
+.sum-wrap { padding: 16px; }
+.sum-intro {
+background: var(–card); border: 1px solid var(–border);
+border-radius: 14px; padding: 14px;
+font-size: 13px; color: var(–muted); line-height: 1.7; margin-bottom: 16px;
+}
+.sum-section { background: var(–card); border: 1px solid var(–border); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+.sum-title { font-family: ‘Noto Serif JP’, serif; font-size: 14px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.sum-title.green { color: var(–accent); }
+.sum-title.warm  { color: var(–warm); }
+.sum-item { display: flex; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(–bg); font-size: 13px; line-height: 1.5; align-items: flex-start; }
+.sum-item:last-child { border-bottom: none; }
+.sum-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.d-green { background: var(–accent); }
+.d-warm  { background: var(–warm); }
+.copy-btn {
+width: 100%; padding: 13px;
+background: var(–chip-bg); color: var(–text);
+border: 1.5px solid var(–border); border-radius: 13px;
+font-family: ‘Zen Kaku Gothic New’, sans-serif;
+font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 6px;
+transition: all 0.15s;
+}
+.copy-btn:active { transform: scale(0.98); }
+.sum-empty { color: var(–muted); font-size: 13px; text-align: center; padding: 20px; }
+
+/* グラフ */
+.chart-legend { display: flex; gap: 14px; margin-bottom: 12px; font-size: 11px; color: var(–muted); flex-wrap: wrap; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 4px; vertical-align: middle; }
+.chart-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.chart-label { font-size: 11px; color: var(–text); width: 86px; flex-shrink: 0; line-height: 1.3; }
+.chart-bars { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.bar-track { background: var(–bg); border-radius: 6px; height: 13px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 6px; transition: width 0.7s cubic-bezier(.4,0,.2,1); min-width: 3px; }
+.bar-fill.green { background: var(–accent); }
+.bar-fill.warm  { background: var(–warm); opacity: 0.85; }
+.chart-count { font-size: 11px; color: var(–muted); width: 24px; text-align: right; flex-shrink: 0; }
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="header-title">📓 記録ノート</div>
+  <div class="today-pill" id="todayPill"></div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="goTab('record')">📝 記録</div>
+  <div class="tab" onclick="goTab('log')">📋 ログ</div>
+  <div class="tab" onclick="goTab('summary')">📊 まとめ</div>
+</div>
+
+<!-- 記録ページ -->
+
+<div class="page active" id="page-record">
+<div class="form-wrap">
+
+  <div class="step" id="step1">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-label">こだわりのカテゴリ</div>
+      <div class="step-preview" id="prev1"></div>
+    </div>
+    <div class="step-body">
+      <div class="chip-grid">
+        <button class="chip" data-cat="食事・食べ物" onclick="toggleCat(this)">🍽️ 食事・食べ物</button>
+        <button class="chip" data-cat="着替え・身支度" onclick="toggleCat(this)">👕 着替え・身支度</button>
+        <button class="chip" data-cat="場所・移動" onclick="toggleCat(this)">🗺️ 場所・移動</button>
+        <button class="chip" data-cat="ルーティン・順序" onclick="toggleCat(this)">🔄 ルーティン・順序</button>
+        <button class="chip" data-cat="感覚（音・触覚など）" onclick="toggleCat(this)">👂 感覚</button>
+        <button class="chip" data-cat="期待・失望" onclick="toggleCat(this)">💔 期待・失望</button>
+        <button class="chip" data-cat="その他" onclick="toggleCat(this)">✨ その他</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step" id="step2">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-label">癇癪になった？</div>
+      <div class="step-preview" id="prev2"></div>
+    </div>
+    <div class="step-body">
+      <div class="tantrum-toggle">
+        <button class="toggle-btn" id="btn-no"  onclick="setTantrum(false)">😌 ならなかった</button>
+        <button class="toggle-btn" id="btn-yes" onclick="setTantrum(true)">😤 なった</button>
+      </div>
+      <div class="trigger-section" id="triggerSection">
+        <div class="trigger-label">きっかけ（複数OK）</div>
+        <div class="chip-grid">
+          <button class="chip" data-trig="眠い・睡眠不足" onclick="toggleTrig(this)">😴 眠い・睡眠不足</button>
+          <button class="chip" data-trig="疲れた" onclick="toggleTrig(this)">😩 疲れた</button>
+          <button class="chip" data-trig="親の言い方・発言" onclick="toggleTrig(this)">💬 親の言い方</button>
+          <button class="chip" data-trig="こだわりが崩れた" onclick="toggleTrig(this)">😖 こだわりが崩れた</button>
+          <button class="chip" data-trig="予定の変更" onclick="toggleTrig(this)">📅 予定の変更</button>
+          <button class="chip" data-trig="原因不明" onclick="toggleTrig(this)">❓ 原因不明</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step" id="step3">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div class="step-label">時間帯・しんどさ</div>
+    </div>
+    <div class="step-body">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">時間帯</div>
+      <div class="chip-grid" style="margin-bottom:14px;">
+        <button class="chip" onclick="toggleTime(this)">朝</button>
+        <button class="chip" onclick="toggleTime(this)">登校前</button>
+        <button class="chip" onclick="toggleTime(this)">学校</button>
+        <button class="chip" onclick="toggleTime(this)">帰宅後</button>
+        <button class="chip" onclick="toggleTime(this)">夕食</button>
+        <button class="chip" onclick="toggleTime(this)">就寝前</button>
+        <button class="chip" onclick="toggleTime(this)">週末</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">しんどさ</div>
+      <div class="intensity-row">
+        <button class="int-btn" data-lv="1" onclick="setInt(this)"><span class="icon">😐</span>軽め</button>
+        <button class="int-btn" data-lv="2" onclick="setInt(this)"><span class="icon">😟</span>中くらい</button>
+        <button class="int-btn" data-lv="3" onclick="setInt(this)"><span class="icon">😰</span>かなり</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step" id="step4">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div class="step-label">一言メモ</div>
+    </div>
+    <div class="step-body">
+      <textarea id="memoInput" placeholder="何があったか、どう対応したか など…"></textarea>
+    </div>
+  </div>
+
+<button class="save-btn" onclick="saveEntry()">この内容で記録する</button>
+
+</div>
+</div>
+
+<!-- ログページ -->
+
+<div class="page" id="page-log">
+<div class="log-wrap">
+  <div class="log-topbar">
+    <div class="log-top-label">RECORD</div>
+    <div class="count-pill" id="logCount">0件</div>
+  </div>
+  <div id="logList"></div>
+</div>
+</div>
+
+<!-- まとめページ -->
+
+<div class="page" id="page-summary">
+<div class="sum-wrap">
+  <div class="sum-intro">
+    記録をカテゴリ・状況別にまとめました。<br>
+    「コピー」ボタンで心理士さんへの共有用テキストをコピーできます。
+  </div>
+  <!-- グラフセクション -->
+  <div class="sum-section" id="chartSection" style="display:none;">
+    <div class="sum-title green">📊 カテゴリ別件数グラフ</div>
+    <div id="chartWrap"></div>
+  </div>
+  <div id="summaryContent"></div>
+  <button class="copy-btn" onclick="copySummary()">📋 テキストをコピーする</button>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let selCats=[], tantrum=null, selTrigs=[], selTimes=[], selInt=null;
+const INT_LABEL = {1:'軽め', 2:'中くらい', 3:'かなり'};
+const CATS = ['食事・食べ物','着替え・身支度','場所・移動','ルーティン・順序','感覚（音・触覚など）','期待・失望','その他'];
+
+const d = new Date();
+document.getElementById('todayPill').textContent =
+  `${d.getMonth()+1}/${d.getDate()}（${'日月火水木金土'[d.getDay()]}）`;
+
+function goTab(t) {
+  ['record','log','summary'].forEach((id,i)=>{
+    document.querySelectorAll('.tab')[i].classList.toggle('active', id===t);
+    document.getElementById('page-'+id).classList.toggle('active', id===t);
+  });
+  if(t==='log') renderLog();
+  if(t==='summary') renderSummary();
+}
+
+function toggleCat(btn) {
+  const c = btn.dataset.cat;
+  if(selCats.includes(c)) { selCats=selCats.filter(x=>x!==c); btn.classList.remove('sel-green'); }
+  else { selCats.push(c); btn.classList.add('sel-green'); }
+  document.getElementById('step1').classList.toggle('filled', selCats.length>0);
+  document.getElementById('prev1').textContent = selCats.length ? selCats[0]+(selCats.length>1?` 他${selCats.length-1}`:'') : '';
+}
+
+function setTantrum(val) {
+  tantrum = val;
+  document.getElementById('btn-yes').className='toggle-btn'+(val?' sel-yes':'');
+  document.getElementById('btn-no').className='toggle-btn'+(!val?' sel-no':'');
+  document.getElementById('triggerSection').classList.toggle('show', val);
+  document.getElementById('step2').classList.add('filled');
+  document.getElementById('prev2').textContent = val ? '😤 あり' : '😌 なし';
+  if(!val) { selTrigs=[]; document.querySelectorAll('[data-trig]').forEach(b=>b.classList.remove('sel-warm')); }
+}
+
+function toggleTrig(btn) {
+  const t = btn.dataset.trig;
+  if(selTrigs.includes(t)) { selTrigs=selTrigs.filter(x=>x!==t); btn.classList.remove('sel-warm'); }
+  else { selTrigs.push(t); btn.classList.add('sel-warm'); }
+}
+
+function toggleTime(btn) {
+  const t = btn.textContent;
+  if(selTimes.includes(t)) { selTimes=selTimes.filter(x=>x!==t); btn.classList.remove('sel-green'); }
+  else { selTimes.push(t); btn.classList.add('sel-green'); }
+}
+
+function setInt(btn) {
+  document.querySelectorAll('.int-btn').forEach(b=>b.classList.remove('lv1','lv2','lv3'));
+  const lv=parseInt(btn.dataset.lv); btn.classList.add('lv'+lv); selInt=lv;
+}
+
+function getLogs() { try { return JSON.parse(localStorage.getItem('k_logs'))||[]; } catch{ return []; } }
+function saveLogs(l) { localStorage.setItem('k_logs', JSON.stringify(l)); }
+
+function saveEntry() {
+  if(selCats.length===0 && tantrum===null && !document.getElementById('memoInput').value.trim()) {
+    showToast('何か入力してください'); return;
+  }
+  const entry = {
+    id: Date.now(),
+    dateStr: new Date().toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',weekday:'short'}),
+    cats: [...selCats], tantrum,
+    triggers: [...selTrigs], times: [...selTimes],
+    intensity: selInt,
+    memo: document.getElementById('memoInput').value.trim(),
+  };
+  const logs=getLogs(); logs.unshift(entry); saveLogs(logs);
+  resetForm(); showToast('✓ 記録しました');
+}
+
+function resetForm() {
+  selCats=[]; tantrum=null; selTrigs=[]; selTimes=[]; selInt=null;
+  document.querySelectorAll('.chip').forEach(b=>b.classList.remove('sel-green','sel-warm'));
+  document.querySelectorAll('.toggle-btn').forEach(b=>b.className='toggle-btn');
+  document.querySelectorAll('.int-btn').forEach(b=>b.classList.remove('lv1','lv2','lv3'));
+  document.getElementById('triggerSection').classList.remove('show');
+  document.getElementById('memoInput').value='';
+  document.getElementById('prev1').textContent='';
+  document.getElementById('prev2').textContent='';
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('filled'));
+}
+
+function renderLog() {
+  const logs=getLogs();
+  document.getElementById('logCount').textContent=`${logs.length}件`;
+  const el=document.getElementById('logList');
+  if(!logs.length) {
+    el.innerHTML=`<div class="empty"><div class="e-icon">📝</div><p>まだ記録がありません。<br>「記録」タブから始めましょう。</p></div>`;
+    return;
+  }
+  el.innerHTML=logs.map(e=>{
+    const tanTag = e.tantrum===true
+      ? `<span class="tag tag-tantrum-yes">😤 癇癪あり</span>`
+      : e.tantrum===false ? `<span class="tag tag-tantrum-no">😌 癇癪なし</span>` : '';
+    const catTags = e.cats.map(c=>`<span class="tag tag-cat">${c}</span>`).join('');
+    const intTag = e.intensity ? `<span class="tag tag-int tag-int${e.intensity}">${INT_LABEL[e.intensity]}</span>` : '';
+    const trigStr = e.triggers&&e.triggers.length ? `<div class="log-triggers">きっかけ：${e.triggers.join('・')}</div>` : '';
+    const timeStr = e.times&&e.times.length ? `<div class="log-time">${e.times.join('・')}</div>` : '';
+    return `<div class="log-card ${e.tantrum?'has-tantrum':''}">
+      <button class="del-btn" onclick="delEntry(${e.id})">×</button>
+      <div class="log-card-top">${catTags}${tanTag}${intTag}<span class="log-date">${e.dateStr}</span></div>
+      ${trigStr}
+      <div class="log-memo">${e.memo||''}</div>
+      ${timeStr}
+    </div>`;
+  }).join('');
+}
+
+function delEntry(id) { saveLogs(getLogs().filter(e=>e.id!==id)); renderLog(); }
+
+function renderChart(catMap, withT) {
+  const chartSection = document.getElementById('chartSection');
+  const chartWrap = document.getElementById('chartWrap');
+  const entries = Object.entries(catMap).filter(([,v])=>v.length>0);
+  if(!entries.length) { chartSection.style.display='none'; return; }
+  chartSection.style.display='block';
+  const max = Math.max(...entries.map(([,v])=>v.length), 1);
+  let html = `<div class="chart-legend">
+    <span><span class="legend-dot" style="background:var(--accent)"></span>こだわりのみ</span>
+    <span><span class="legend-dot" style="background:var(--warm)"></span>うち癇癪あり</span>
+  </div>`;
+  entries.sort((a,b)=>b[1].length-a[1].length).forEach(([cat, es]) => {
+    const total = es.length;
+    const tanCount = es.filter(e=>e.tantrum).length;
+    const totalPct = Math.round(total/max*100);
+    const tanPct = Math.round(tanCount/max*100);
+    html += `<div class="chart-row">
+      <div class="chart-label">${cat}</div>
+      <div class="chart-bars">
+        <div class="bar-track"><div class="bar-fill green" style="width:${totalPct}%"></div></div>
+        ${tanCount>0?`<div class="bar-track"><div class="bar-fill warm" style="width:${tanPct}%"></div></div>`:''}
+      </div>
+      <div class="chart-count">${total}</div>
+    </div>`;
+  });
+  chartWrap.innerHTML = html;
+  // アニメーション用：幅を0→実値にリセット
+  setTimeout(()=>{}, 50);
+}
+
+function renderSummary() {
+  const logs=getLogs(); const el=document.getElementById('summaryContent');
+  if(!logs.length) { document.getElementById('chartSection').style.display='none'; el.innerHTML=`<div class="sum-empty">まだ記録がありません</div>`; return; }
+
+  const withT=logs.filter(e=>e.tantrum===true);
+  const noT=logs.filter(e=>e.tantrum!==true);
+  const catMap={};
+  logs.forEach(e=>e.cats.forEach(c=>{ if(!catMap[c])catMap[c]=[]; catMap[c].push(e); }));
+  const trigMap={};
+  withT.forEach(e=>(e.triggers||[]).forEach(t=>{ trigMap[t]=(trigMap[t]||0)+1; }));
+
+  renderChart(catMap, withT);
+
+  let html=`<div class="sum-section">
+    <div class="sum-title green">📊 概要</div>
+    <div class="sum-item"><div class="sum-dot d-green"></div><div>記録件数：全${logs.length}件（癇癪あり ${withT.length}件 / なし ${noT.length}件）</div></div>
+    ${Object.keys(catMap).map(c=>`<div class="sum-item"><div class="sum-dot d-green"></div><div>${c}：${catMap[c].length}件（うち癇癪あり ${catMap[c].filter(e=>e.tantrum).length}件）</div></div>`).join('')}
+  </div>`;
+
+  if(withT.length) {
+    html+=`<div class="sum-section"><div class="sum-title warm">😤 癇癪があった記録（${withT.length}件）</div>`;
+    if(Object.keys(trigMap).length) {
+      const topTrigs=Object.entries(trigMap).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}（${v}回）`).join('、');
+      html+=`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">よく見られたきっかけ：${topTrigs}</div>`;
+    }
+    html+=withT.map(e=>{
+      const tStr=e.times&&e.times.length?`[${e.times.join('・')}] `:'';
+      const iStr=e.intensity?`（${INT_LABEL[e.intensity]}）`:'';
+      const trStr=e.triggers&&e.triggers.length?` ／ きっかけ：${e.triggers.join('・')}`:' ';
+      return `<div class="sum-item"><div class="sum-dot d-warm"></div><div>${e.dateStr}　${tStr}${iStr}${trStr}<br>${e.memo||'（メモなし）'}</div></div>`;
+    }).join('');
+    html+='</div>';
+  }
+
+  if(noT.length) {
+    html+=`<div class="sum-section"><div class="sum-title green">📝 こだわりのみの記録（${noT.length}件）</div>`;
+    html+=noT.map(e=>{
+      const tStr=e.times&&e.times.length?`[${e.times.join('・')}] `:'';
+      const catStr=e.cats.length?`[${e.cats.join('・')}] `:'';
+      return `<div class="sum-item"><div class="sum-dot d-green"></div><div>${e.dateStr}　${tStr}${catStr}<br>${e.memo||'（メモなし）'}</div></div>`;
+    }).join('');
+    html+='</div>';
+  }
+
+  el.innerHTML=html;
+}
+
+function copySummary() {
+  const logs=getLogs();
+  if(!logs.length) { showToast('記録がありません'); return; }
+  const withT=logs.filter(e=>e.tantrum===true);
+  const noT=logs.filter(e=>e.tantrum!==true);
+  const catMap={};
+  logs.forEach(e=>e.cats.forEach(c=>{ if(!catMap[c])catMap[c]=[]; catMap[c].push(e); }));
+  const trigMap={};
+  withT.forEach(e=>(e.triggers||[]).forEach(t=>{ trigMap[t]=(trigMap[t]||0)+1; }));
+
+  let txt=`【こだわり・癇癪記録まとめ】\n`;
+  txt+=`記録期間：${logs[logs.length-1]?.dateStr} 〜 ${logs[0]?.dateStr}\n`;
+  txt+=`合計${logs.length}件（癇癪あり ${withT.length}件 / こだわりのみ ${noT.length}件）\n\n`;
+  txt+=`■ カテゴリ別件数\n`;
+  Object.entries(catMap).forEach(([c,es])=>{ txt+=`・${c}：${es.length}件（うち癇癪あり ${es.filter(e=>e.tantrum).length}件）\n`; });
+  if(Object.keys(trigMap).length) {
+    txt+=`\n■ 癇癪のきっかけ（多い順）\n`;
+    Object.entries(trigMap).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{ txt+=`・${k}：${v}回\n`; });
+  }
+  if(withT.length) {
+    txt+=`\n■ 癇癪があった記録\n`;
+    withT.forEach(e=>{
+      const tStr=e.times&&e.times.length?`[${e.times.join('・')}] `:'';
+      const iStr=e.intensity?`（${INT_LABEL[e.intensity]}）`:'';
+      const trStr=e.triggers&&e.triggers.length?`きっかけ：${e.triggers.join('・')} ／ `:'';
+      txt+=`・${e.dateStr} ${tStr}${iStr}\n  ${trStr}${e.memo||'（メモなし）'}\n`;
+    });
+  }
+  if(noT.length) {
+    txt+=`\n■ こだわりのみ（癇癪なし）の記録\n`;
+    noT.forEach(e=>{
+      const tStr=e.times&&e.times.length?`[${e.times.join('・')}] `:'';
+      const catStr=e.cats.length?`[${e.cats.join('・')}] `:'';
+      txt+=`・${e.dateStr} ${tStr}${catStr}\n  ${e.memo||'（メモなし）'}\n`;
+    });
+  }
+  navigator.clipboard.writeText(txt)
+    .then(()=>showToast('✓ コピーしました'))
+    .catch(()=>showToast('コピーに失敗しました'));
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+</script>
+
+</body>
+</html>
